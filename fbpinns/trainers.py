@@ -267,7 +267,6 @@ def FBPINN_loss(active_params, fixed_params, static_params, takess, constraints,
     return loss_fn(all_params, constraints_)
 
 def PINN_loss(active_params, static_params, constraints, model_fns, jmapss, loss_fn):
-
     # recombine all_params
     all_params = {"static":static_params, "trainable":active_params}
 
@@ -278,8 +277,8 @@ def PINN_loss(active_params, static_params, constraints, model_fns, jmapss, loss
         for c_ in constraint:
             logger.debug(str_tensor(c_))
         x_batch = constraint[0]
-        ujs = PINN_forward(all_params, x_batch, model_fns, jmaps)
-        constraints_.append(constraint+ujs)
+        ujs = list(PINN_forward(all_params, x_batch, model_fns, jmaps))
+        constraints_.append([x_batch] + ujs)
     return loss_fn(all_params, constraints_)
 
 @partial(jit, static_argnums=(0, 5, 8, 9, 10))

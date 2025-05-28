@@ -8,16 +8,35 @@ import matplotlib.pyplot as plt
 
 from fbpinns.plot_trainer_1D import _plot_setup, _to_numpy
 
-def _plot_test_im(u_test, xlim, ulim, n_test, it=None):
-    u_test = u_test.reshape(n_test)
-    if it is not None:
-        u_test = u_test[:,:,it]# for 3D
-    plt.imshow(u_test.T,# transpose as jnp.meshgrid uses indexing="ij"
-               origin="lower", extent=(xlim[0][0], xlim[1][0], xlim[0][1], xlim[1][1]),
-               cmap="viridis", vmin=ulim[0], vmax=ulim[1])
+def _plot_test_im(u_test, xlim0, ulim, n_test, it=None):
+    # Handle different input shapes
+    if len(n_test) == 3:  # 3D case (x, y, t)
+        nx, ny, nt = n_test
+        total_points = nx * ny
+        
+        # If the data is already in time-major format
+        if len(u_test.shape) == 1 and u_test.size == total_points * nt:
+            u_test = u_test.reshape(total_points, nt)
+            if it is not None:
+                u_test = u_test[:, it]
+        elif len(u_test.shape) == 2:
+            if it is not None:
+                u_test = u_test[:, it]
+        
+        # Reshape to spatial dimensions
+        u_test = u_test.reshape(nx, ny)
+    else:  # 2D case (x, y)
+        nx, ny = n_test[:2]  # Take only spatial dimensions
+        u_test = u_test.reshape(nx, ny)
+    
+    # Create the plot
+    plt.imshow(u_test.T, 
+               origin="lower",
+               extent=[xlim0[0], xlim0[1], xlim0[0], xlim0[1]],
+               cmap="viridis",
+               vmin=ulim[0],
+               vmax=ulim[1])
     plt.colorbar()
-    plt.xlim(xlim[0][0], xlim[1][0])
-    plt.ylim(xlim[0][1], xlim[1][1])
     plt.gca().set_aspect("equal")
 
 @_to_numpy
@@ -100,10 +119,3 @@ def plot_2D_PINN(x_batch_test, u_exact, u_test, u_raw_test, x_batch, all_params,
     plt.tight_layout()
 
     return (("test",f),)
-
-
-
-
-
-
-
