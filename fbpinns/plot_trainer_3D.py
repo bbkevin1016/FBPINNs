@@ -98,6 +98,6 @@ def plot_3D_PINN(x_batch_test, u_exact, u_test, u_raw_test, x_batch, all_params,
             plt.ylabel('y')
             component_name = 'u' if comp == 0 else 'v'
             plt.title(f'{component_name} at t={t}')
-    
+
     plt.tight_layout()
     return [("test_solution", f)]
